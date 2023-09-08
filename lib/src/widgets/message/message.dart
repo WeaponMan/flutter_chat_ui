@@ -281,6 +281,7 @@ class Message extends StatelessWidget {
   Widget build(BuildContext context) {
     final query = MediaQuery.of(context);
     final user = InheritedUser.of(context).user;
+    final currentUserIsAuthorRelative =  message.author.id.startsWith("r-") || user.id == message.author.id;
     final currentUserIsAuthor = user.id == message.author.id;
     final enlargeEmojis =
         emojiEnlargementBehavior != EmojiEnlargementBehavior.never &&
@@ -294,20 +295,20 @@ class Message extends StatelessWidget {
     final borderRadius = bubbleRtlAlignment == BubbleRtlAlignment.left
         ? BorderRadiusDirectional.only(
             bottomEnd: Radius.circular(
-              !currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
+              !currentUserIsAuthorRelative || roundBorder ? messageBorderRadius : 0,
             ),
             bottomStart: Radius.circular(
-              currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
+              currentUserIsAuthorRelative || roundBorder ? messageBorderRadius : 0,
             ),
             topEnd: Radius.circular(messageBorderRadius),
             topStart: Radius.circular(messageBorderRadius),
           )
         : BorderRadius.only(
             bottomLeft: Radius.circular(
-              currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
+              currentUserIsAuthorRelative || roundBorder ? messageBorderRadius : 0,
             ),
             bottomRight: Radius.circular(
-              !currentUserIsAuthor || roundBorder ? messageBorderRadius : 0,
+              !currentUserIsAuthorRelative || roundBorder ? messageBorderRadius : 0,
             ),
             topLeft: Radius.circular(messageBorderRadius),
             topRight: Radius.circular(messageBorderRadius),
@@ -315,10 +316,10 @@ class Message extends StatelessWidget {
 
     return Container(
       alignment: bubbleRtlAlignment == BubbleRtlAlignment.left
-          ? currentUserIsAuthor
+          ? currentUserIsAuthorRelative
               ? AlignmentDirectional.centerEnd
               : AlignmentDirectional.centerStart
-          : currentUserIsAuthor
+          : currentUserIsAuthorRelative
               ? Alignment.centerRight
               : Alignment.centerLeft,
       margin: bubbleRtlAlignment == BubbleRtlAlignment.left
@@ -339,7 +340,7 @@ class Message extends StatelessWidget {
             ? null
             : TextDirection.ltr,
         children: [
-          if (!currentUserIsAuthor && showUserAvatars) _avatarBuilder(),
+          if (!currentUserIsAuthor && !currentUserIsAuthorRelative && showUserAvatars) _avatarBuilder(),
           ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: messageWidth.toDouble(),
@@ -376,7 +377,7 @@ class Message extends StatelessWidget {
               ],
             ),
           ),
-          if (currentUserIsAuthor)
+          if (currentUserIsAuthorRelative)
             Padding(
               padding: InheritedChatTheme.of(context).theme.statusIconPadding,
               child: showStatus
